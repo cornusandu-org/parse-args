@@ -1,8 +1,78 @@
 #include "parseargs/parseargs.hpp"
 #include "defs.hpp"
 
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+
+#define BUG_ON(condition, msg, ...) do { \
+    if (condition) { \
+        fprintf(stderr, msg " Unrecoverable.\n", __VA_ARGS__); \
+        abort(); \
+    } \
+} while (0)
+
+#if PARSEARGS_ATTEMPT_RECOVERY == 0
+
+#define RECOVER_BUG_ON(condition, action, msg, ...)        \
+do {                                                       \
+    if (condition) {                                      \
+        fprintf(stderr, msg " Recoverable.\n",             \
+                ##__VA_ARGS__);                            \
+        abort();                                          \
+    }                                                      \
+} while (0)
+
+#else
+
+#define RECOVER_BUG_ON(condition, action, msg, ...)        \
+do {                                                       \
+    if (condition) {                                      \
+        fprintf(stderr, msg " Recoverable.\n",             \
+                ##__VA_ARGS__);                            \
+        action;                                           \
+    }                                                      \
+} while (0)
+
+#endif
+
 void ArgParser::parse_args(int argc, const char** argv) {
-    // to-do
+    if (argv == NULL) {
+        fprintf(stderr, "Recieved NULL argv. Unrecoverable.\n");
+        abort();
+    }
+    RECOVER_BUG_ON(argc == 0, return, "Recieved NULL argc (Are you sure you are passing it correctly?).");
+
+    for (int i = 1; i < argc; i++) {
+        const char* arg = argv[i];
+        if (arg[0] == '-') {
+            const char* name;
+            if (arg[1] == '-')
+                name = arg + 2;
+            else
+                name = arg + 1;
+            
+            for (BaseArgument *argument : this->arguments) {
+                if (argument->req_parsing == FALSE) {
+                    argument->parse(name);
+                } else {
+                    RECOVER_BUG_ON(i + 1 >= argc, ;, "Missing value for argument %s.", name);
+                    const char* value = argv[i + 1];
+                    argument->parse(value);
+                    i++;
+                }
+            }
+        } else {
+            RECOVER_BUG_ON(1, ;, "Recieved positional argument (currently unsupported).");
+        }
+    }
+
+    for (BaseArgument *arg : this->arguments) {
+        if (arg->required == TRUE && arg->_was_parsed != TRUE) {
+            BUG_ON(arg->_was_parsed == FLAG_UNKNOWN, "Required argument %s is in invalid state.", arg->name);
+            BUG_ON(arg->_was_parsed == FALSE, "Required argument %s recieved no value.", arg->name);
+        }
+    }
 }
 
 void* ArgParser::get_arg(const char* name) {

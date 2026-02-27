@@ -1,6 +1,15 @@
+#pragma once
+
 #include <cstdlib>
 #include <cstring>
 #include <cstdint>
+#include <cstdio>
+
+
+#ifndef PARSEARGS_ATTEMPT_RECOVERY
+#define PARSEARGS_ATTEMPT_RECOVERY 0
+#endif
+
 
 using flag_t = unsigned char;
 
@@ -10,7 +19,10 @@ using flag_t = unsigned char;
 
 class BaseArgument {
     public:
-    const char* name;
+    const char* name = NULL;
+    flag_t required = 1;
+    flag_t req_parsing = FLAG_UNKNOWN;
+    flag_t _was_parsed = FALSE;
     virtual ~BaseArgument() = default;
     virtual void parse(const char* data) = 0;
     virtual void* get_data() = 0;
@@ -20,6 +32,9 @@ template <typename T>
 class Argument : BaseArgument {
     public:
         inline Argument(const char* name, flag_t required) {
+            if (name == NULL) {
+                fprintf(stderr, "Error: Recieved NULL pointer for argument name. Unrecoverable.\n");
+            }
             uint64_t lenght = strlen(name);
             this->name = (char*) malloc(lenght + 1);
             memcpy(this->name, name, lenght + 1);
@@ -39,6 +54,8 @@ class Argument : BaseArgument {
 
         T data;
         flag_t required = TRUE;
+        flag_t req_parsing = TRUE;
+        flag_t _was_parsed = FALSE;
         char* name;
 
     void parse(const char* data) override;

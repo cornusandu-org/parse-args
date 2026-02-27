@@ -6,6 +6,7 @@
 
 template<>
 void Argument<int>::parse(const char* data) {
+    this->_was_parsed = TRUE;
     this->data = atoi(data);
 }
 
@@ -17,11 +18,13 @@ void Argument<int>::free_data() {
 template<>
 Argument<int>::Argument(const Argument<int> &other) : Argument(other.name, other.required) {
     this->data = other.data;
+    this->_was_parsed = other._was_parsed;
 }
 
 
 template<>
 void Argument<char*>::parse(const char* data) {
+    this->_was_parsed = TRUE;
     uint64_t lenght = strlen(data);
     this->data = (char*)malloc(lenght + 1);
     memcpy(this->data, data, lenght + 1);
@@ -29,6 +32,16 @@ void Argument<char*>::parse(const char* data) {
 
 template<>
 void Argument<char*>::free_data() {
+    if (this->data == NULL) {
+        fprintf(stderr, "Freeing Argument<char*> that recieved no value (was never parsed).");
+        #if PARSEARGS_ATTEMPT_RECOVERY == 0
+        fprintf(stderr, "Recoverable (compile with -DPARSEARGS_ATTEMPT_RECOVERY=1 to not crash).\n");
+        abort();
+        #else
+        fprintf(stderr, "Recoverable.\n");
+        return
+        #endif
+    }
     free(this->data);
     this->data = nullptr;
 }
@@ -38,6 +51,7 @@ Argument<char*>::Argument(const Argument<char*> &other) : Argument(other.name, o
     uint64_t lenght = strlen(other.data);
     this->data = (char*) malloc(lenght + 1);
     memcpy(this->data, other.data, lenght + 1);
+    this->_was_parsed = other._was_parsed;
 }
 
 template class Argument<int>;
