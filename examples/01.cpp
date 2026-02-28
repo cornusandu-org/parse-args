@@ -1,18 +1,22 @@
-#include "parseargs/parseargs.hpp"
-#include "defs.hpp"
+#include "../parseargs/parseargs.hpp"
 
-namespace parseargs_meta {
-    int version = 2;
-    const char* repo = NULL;
-    const char* make_an_issue = NULL;
+#include <cstdio>
+
+void setup_argparse(ArgParser& parser) {
+    static Argument<int> arg("val", true);
+    parser.push_arg(arg);
 }
 
-FILENAME(versioning.cpp);
-LICENSE(MIT License);
-LICENSE_TEXT(MIT License, versioning);
-COPYRIGHT(cornusandu, 2026);
+int main(int argc, const char** argv) {
+    ArgParser parser;
+    setup_argparse(parser);
 
+    parser.parse_args(argc, argv);
+    
+    int value = *(int*)parser.get_arg("val");
 
+    printf("%d\n", value);
+}
 
 
 // MIT License

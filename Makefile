@@ -35,5 +35,13 @@ delete_lib:
 	@rm -f $(OUTLIB)
 	@echo "RM  $(SEP)$(OUTAR)"
 	@rm -f $(OUTAR)
+	@echo "RM  $(SEP)./test"
+	@rm -f ./test
 
 clean: delete_o delete_lib
+
+.PHONY: test
+
+test: $(OUTAR) tests/run_tests.cpp tests/defs.hpp
+	@g++ tests/run_tests.cpp $(OUTAR) -o test
+	@./test

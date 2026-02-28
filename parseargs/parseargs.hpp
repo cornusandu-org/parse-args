@@ -19,7 +19,7 @@ using flag_t = unsigned char;
 
 class BaseArgument {
     public:
-    const char* name = NULL;
+    char* name = NULL;
     flag_t required = 1;
     flag_t req_parsing = FLAG_UNKNOWN;
     flag_t _was_parsed = FALSE;
@@ -29,7 +29,7 @@ class BaseArgument {
 };
 
 template <typename T>
-class Argument : BaseArgument {
+class Argument : public BaseArgument {
     public:
         inline Argument(const char* name, flag_t required) {
             if (name == NULL) {
@@ -42,7 +42,6 @@ class Argument : BaseArgument {
         }
 
         Argument(const Argument<T> &other);
-        Argument(Argument &&other);
     
         inline ~Argument() override {
             if (this->name == nullptr)
@@ -53,10 +52,6 @@ class Argument : BaseArgument {
         }
 
         T data;
-        flag_t required = TRUE;
-        flag_t req_parsing = TRUE;
-        flag_t _was_parsed = FALSE;
-        char* name;
 
     void parse(const char* data) override;
     inline void* get_data() {
@@ -92,8 +87,7 @@ class ArgParser {
         inline const std::vector<BaseArgument*>& get_args() {
             return arguments;
         }
-        template <typename T>
-        inline void push_arg(Argument<T> &arg) {
+        inline void push_arg(BaseArgument &arg) {
             arguments.push_back(&arg);
         }
         void parse_args(int argc, const char** argv);
