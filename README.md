@@ -35,7 +35,7 @@ int main(int argc, const char** argv) {
 ```
 
 ## Default argument types
-The default argument types are Argument<int> (integers) and Argument<char*> (strings).
+The default argument types are `Argument<int>` (integers) and `Argument<char*>` (strings).
 
 ## Defining custom argument types
 You can define custom argument types the same way the library does in `argument.cpp`:
