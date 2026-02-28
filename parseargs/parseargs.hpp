@@ -39,6 +39,7 @@ class Argument : public BaseArgument {
             this->name = (char*) malloc(lenght + 1);
             memcpy(this->name, name, lenght + 1);
             this->required = required;
+            this->data = NULL;
         }
 
         Argument(const Argument<T> &other);
