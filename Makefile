@@ -43,5 +43,5 @@ clean: delete_o delete_lib
 .PHONY: test
 
 test: $(OUTAR) tests/run_tests.cpp tests/defs.hpp
-	@g++ tests/run_tests.cpp $(OUTAR) -o test
+	@g++ -Wl,--wrap=abort tests/run_tests.cpp $(OUTAR) -o test
 	@./test

@@ -53,6 +53,8 @@ void ArgParser::parse_args(int argc, const char** argv) {
                 name = arg + 1;
             
             for (BaseArgument *argument : this->arguments) {
+                if (strcmp(argument->name, name) != 0)
+                    continue;
                 if (argument->req_parsing == FALSE) {
                     argument->parse(name);
                 } else {

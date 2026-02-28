@@ -32,7 +32,7 @@ void Argument<char*>::parse(const char* data) {
 
 template<>
 void Argument<char*>::free_data() {
-    if (this->data == NULL) {
+    if (this->data == NULL && this->required) {
         fprintf(stderr, "Freeing Argument<char*> that recieved no value (was never parsed).");
         #if PARSEARGS_ATTEMPT_RECOVERY == 0
         fprintf(stderr, "Recoverable (compile with -DPARSEARGS_ATTEMPT_RECOVERY=1 to not crash).\n");
@@ -48,9 +48,14 @@ void Argument<char*>::free_data() {
 
 template<>
 Argument<char*>::Argument(const Argument<char*> &other) : Argument(other.name, other.required) {
-    uint64_t lenght = strlen(other.data);
-    this->data = (char*) malloc(lenght + 1);
-    memcpy(this->data, other.data, lenght + 1);
+    if (other.data != NULL) {
+        int64_t lenght = strlen(other.data);
+        this->data = (char*) malloc(lenght + 1);
+        memcpy(this->data, other.data, lenght + 1);
+    }
+    else
+        this->data = NULL;
+    
     this->_was_parsed = other._was_parsed;
 }
 

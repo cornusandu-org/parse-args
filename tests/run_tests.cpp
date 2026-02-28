@@ -9,7 +9,8 @@ char test_tofail;
 
 int aborted = 0;
 
-extern "C" void abort() {
+
+extern "C" void __wrap_abort() {
     aborted = 1;
     return;
 }
@@ -47,6 +48,49 @@ void tests() {
         suppress_stderr_end();
         ASSERT(aborted == 1);
     });
+
+    ADD_TEST("0/0 arguments (no abort)", {
+        aborted = 0;
+        int argc = 1;
+        const char* argv[] = {"./bin"};
+        ArgParser parser;
+        suppress_err_begin();
+        parser.parse_args(argc, argv);
+        suppress_stderr_end();
+        ASSERT(aborted == 0);
+    });
+
+    ADD_TEST("1/1(2) arguments (no abort)", {
+        aborted = 0;
+        int argc = 3;
+        const char* argv[] = {"./bin", "--name", "test_app"};
+        Argument<char*> arg1 = Argument<char*>("name", true);
+        Argument<char*> arg2 = Argument<char*>("data", false);
+        ArgParser parser;
+        parser.push_arg(arg1);
+        parser.push_arg(arg2);
+        suppress_err_begin();
+        parser.parse_args(argc, argv);
+        suppress_stderr_end();
+        char* data = *(char**)parser.get_arg("name");
+        ASSERT(aborted == 0);
+    });
+
+    ADD_TEST("1/1(2) arguments (correct data)", {
+        aborted = 0;
+        int argc = 3;
+        const char* argv[] = {"./bin", "--name", "test_app"};
+        Argument<char*> arg1 = Argument<char*>("name", true);
+        Argument<char*> arg2 = Argument<char*>("data", false);
+        ArgParser parser;
+        parser.push_arg(arg1);
+        parser.push_arg(arg2);
+        //suppress_err_begin();
+        parser.parse_args(argc, argv);
+        //suppress_stderr_end();
+        char* data = *(char**)parser.get_arg("name");
+        ASSERT(strcmp(data, "test_app") == 0);
+    });
 }
 
 int main() {
@@ -58,7 +102,7 @@ int main() {
 FILE(run_tests);
 COPYRIGHT(cornusandu, 2026);
 LICENSE(MIT License);
-LICENSE_TEXT(MIT License);
+LICENSE_TEXT(MIT License, run_tests);
 
 
 
